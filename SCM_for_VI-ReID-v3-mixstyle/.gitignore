@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Model checkpoints exceed GitHub's regular per-file size limit.
+*.pth
+
+# Local experiment outputs are not part of the source-only backup.
+/sysu/

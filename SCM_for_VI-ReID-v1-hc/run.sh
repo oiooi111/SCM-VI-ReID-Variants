@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=0 python3 main.py --output_path ablation/lamba4_0.15 --lambda_align 0.15

@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+.env
+.env.*
+*.pth
+*.pt
+*.ckpt
+*.npy
+*.npz
+*.log
+experiments/
+logs/
+datasets/
+data/

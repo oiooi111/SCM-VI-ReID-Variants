@@ -1,0 +1,6 @@
+# Install compatible CUDA torch/torchvision separately, or reuse the original environment.
+numpy<2
+Pillow<10
+ftfy
+regex
+tqdm
