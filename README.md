@@ -35,7 +35,14 @@ git clone git@github.com:oiooi111/SCM-VI-ReID-Variants.git
 
 首次启动会下载 CLIP RN50 预训练权重，需联网或预先准备好 `~/.cache/clip/RN50.pt`。仓库不含预训练权重、训练权重、数据集或日志。
 
-SYSU-MM01 路径末尾要保留 `/`，目录需要原图、`exp/test_id.txt`，以及原训练代码使用的四个预处理文件：
+SYSU-MM01 路径末尾要保留 `/`，目录需要原图和 `exp/train_id.txt`、`exp/val_id.txt`、`exp/test_id.txt`。先在任意一个版本目录运行预处理（六个目录均包含相同脚本）：
+
+```bash
+cd SCM_for_VI-ReID-v1-hc
+python3 preprocess_sysu.py --data-path /data/SYSU-MM01/
+```
+
+预处理按你提供的脚本合并 train + val，使用 RGB 相机 1/2/4/5 和红外相机 3/6，将原图缩放为 192×384，统一按身份排序重标号，在数据集根目录生成加载器需要的四个文件：
 
 ```text
 train_rgb_resized_img.npy
@@ -43,6 +50,8 @@ train_rgb_resized_label.npy
 train_ir_resized_img.npy
 train_ir_resized_label.npy
 ```
+
+已有输出时脚本默认停止；确认要重新生成时加 `--overwrite`。六份代码共用同一数据集目录时只需预处理一次。训练时 `--sysu_data_path` 仍需以 `/` 结尾。
 
 ## 独立运行一个版本
 
