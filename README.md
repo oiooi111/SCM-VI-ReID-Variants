@@ -42,16 +42,18 @@ cd SCM_for_VI-ReID-v1-hc
 python3 preprocess_sysu.py --data-path /data/SYSU-MM01/
 ```
 
-预处理按你提供的脚本合并 train + val，使用 RGB 相机 1/2/4/5 和红外相机 3/6，将原图缩放为 192×384，统一按身份排序重标号，在数据集根目录生成加载器需要的四个文件：
+预处理按你最终提供的脚本合并 train + val，使用 RGB 相机 1/2/4/5 和红外相机 3/6，将原图缩放为 144×288，统一按身份排序重标号，在数据集根目录生成六个文件：
 
 ```text
 train_rgb_resized_img.npy
 train_rgb_resized_label.npy
+train_rgb_resized_path.npy
 train_ir_resized_img.npy
 train_ir_resized_label.npy
+train_ir_resized_path.npy
 ```
 
-已有输出时脚本默认停止；确认要重新生成时加 `--overwrite`。六份代码共用同一数据集目录时只需预处理一次。训练时 `--sysu_data_path` 仍需以 `/` 结尾。
+当前六个监督训练版本读取其中四个图像与标签文件；路径文件同时保存，供需要图像路径的流程使用。已有输出时脚本默认停止；如果曾用旧的 192×384 脚本生成数据，需加 `--overwrite` 重新生成。六份代码共用同一数据集目录时只需预处理一次。训练时 `--sysu_data_path` 仍需以 `/` 结尾。
 
 ## 独立运行一个版本
 

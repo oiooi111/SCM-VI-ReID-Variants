@@ -1,7 +1,7 @@
 """Prepare SYSU-MM01 train/validation images for the existing data loader.
 
-The output image resolution (192 x 384) follows the supplied preprocessing
-script. The training transforms subsequently crop images to 144 x 288.
+The output image resolution (144 x 288) follows the supplied preprocessing
+script and the model's default input size.
 """
 
 import argparse
@@ -19,8 +19,10 @@ IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp"}
 OUTPUTS = (
     "train_rgb_resized_img.npy",
     "train_rgb_resized_label.npy",
+    "train_rgb_resized_path.npy",
     "train_ir_resized_img.npy",
     "train_ir_resized_label.npy",
+    "train_ir_resized_path.npy",
 )
 
 
@@ -44,22 +46,23 @@ def image_paths(root, identities, cameras):
     return paths
 
 
-def write_arrays(image_paths_list, image_path, label_path, labels):
+def write_arrays(image_paths_list, image_path, label_path, path_path, labels):
     image_array = np.lib.format.open_memmap(
         image_path, mode="w+", dtype=np.uint8,
-        shape=(len(image_paths_list), 384, 192, 3))
+        shape=(len(image_paths_list), 288, 144, 3))
     label_array = np.lib.format.open_memmap(
         label_path, mode="w+", dtype=np.int64, shape=(len(image_paths_list),))
 
     resampling = getattr(Image, "Resampling", Image).LANCZOS
     for index, path in enumerate(image_paths_list):
         with Image.open(path) as image:
-            resized = image.convert("RGB").resize((192, 384), resampling)
+            resized = image.convert("RGB").resize((144, 288), resampling)
             image_array[index] = np.asarray(resized, dtype=np.uint8)
         label_array[index] = labels[int(path.parent.name)]
     image_array.flush()
     label_array.flush()
     del image_array, label_array
+    np.save(path_path, np.asarray([str(path) for path in image_paths_list]))
 
 
 def preprocess(root, overwrite=False):
@@ -95,8 +98,8 @@ def preprocess(root, overwrite=False):
                     prefix=f".{name}.", suffix=".npy", dir=root,
                     delete=False) as handle:
                 temporary.append(Path(handle.name))
-        write_arrays(rgb_paths, temporary[0], temporary[1], labels)
-        write_arrays(ir_paths, temporary[2], temporary[3], labels)
+        write_arrays(rgb_paths, temporary[0], temporary[1], temporary[2], labels)
+        write_arrays(ir_paths, temporary[3], temporary[4], temporary[5], labels)
         for source, target in zip(temporary, outputs):
             os.replace(source, target)
     finally:
@@ -115,7 +118,7 @@ def main():
         help="SYSU-MM01 root containing exp/train_id.txt and cam1..cam6")
     parser.add_argument(
         "--overwrite", action="store_true",
-        help="replace existing four .npy outputs")
+        help="replace existing six .npy outputs")
     args = parser.parse_args()
     preprocess(args.data_path, overwrite=args.overwrite)
 

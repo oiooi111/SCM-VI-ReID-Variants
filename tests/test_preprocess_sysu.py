@@ -20,8 +20,8 @@ VARIANTS = (
 
 
 class PreprocessSysuTest(unittest.TestCase):
-    def test_every_variant_writes_loader_files_with_shared_sorted_labels(self):
-        """Catches missing outputs, unstable labels, wrong shape and path joining."""
+    def test_every_variant_writes_images_labels_and_paths(self):
+        """Catches wrong size, missing path arrays and inconsistent labels."""
         for variant in VARIANTS:
             with self.subTest(variant=variant), tempfile.TemporaryDirectory() as temp:
                 dataset = Path(temp)
@@ -47,16 +47,30 @@ class PreprocessSysuTest(unittest.TestCase):
                 ir = np.load(dataset / "train_ir_resized_img.npy")
                 rgb_labels = np.load(dataset / "train_rgb_resized_label.npy")
                 ir_labels = np.load(dataset / "train_ir_resized_label.npy")
-                self.assertEqual(rgb.shape, (2, 384, 192, 3))
-                self.assertEqual(ir.shape, (2, 384, 192, 3))
+                rgb_paths = np.load(dataset / "train_rgb_resized_path.npy")
+                ir_paths = np.load(dataset / "train_ir_resized_path.npy")
+                self.assertEqual(rgb.shape, (2, 288, 144, 3))
+                self.assertEqual(ir.shape, (2, 288, 144, 3))
                 np.testing.assert_array_equal(rgb_labels, [0, 1])
                 np.testing.assert_array_equal(ir_labels, [0, 1])
+                self.assertEqual(
+                    rgb_paths.tolist(),
+                    [str((dataset / "cam2/0002/0001.jpg").resolve()),
+                     str((dataset / "cam1/0010/0001.jpg").resolve())])
+                self.assertEqual(
+                    ir_paths.tolist(),
+                    [str((dataset / "cam6/0002/0001.jpg").resolve()),
+                     str((dataset / "cam3/0010/0001.jpg").resolve())])
                 self.assertEqual(rgb.dtype, np.uint8)
 
                 repeat = subprocess.run(command, capture_output=True, text=True)
                 self.assertNotEqual(repeat.returncode, 0)
                 np.testing.assert_array_equal(
                     np.load(dataset / "train_rgb_resized_label.npy"), [0, 1])
+
+                overwrite = subprocess.run(
+                    command + ["--overwrite"], capture_output=True, text=True)
+                self.assertEqual(overwrite.returncode, 0, overwrite.stderr)
 
 
 if __name__ == "__main__":
